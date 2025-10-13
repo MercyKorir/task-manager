@@ -77,8 +77,8 @@ A full-stack task management application built with Spring Boot (backend) and An
 
 1. **Clone the repository**
 ```bash
-   git clone https://github.com/MercyKorir/task-manager.git
-   cd task-manager/store
+git clone https://github.com/MercyKorir/task-manager.git
+cd task-manager/store
 ```
 
 2. **Configure the application**
@@ -87,19 +87,19 @@ A full-stack task management application built with Spring Boot (backend) and An
 
 3. **Build the project**
 ```bash
-   mvn clean install
+mvn clean install
 ```
 
 ### Frontend Setup
 
 1. **Navigate to frontend directory**
 ```bash
-   cd task-manager/frontend
+cd task-manager/frontend
 ```
 
 2. **Install dependencies**
 ```bash
-   npm install
+npm install
 ```
 
 ## Running the Application
@@ -138,7 +138,7 @@ Open two terminal windows and run both commands above.
 
 Once the backend is running, access the Swagger UI:
 
-**URL:** http://localhost:8080/swagger-ui.html
+**URL:** http://localhost:8080/swagger-ui/index.html
 
 **OpenAPI JSON:** http://localhost:8080/api-docs
 
