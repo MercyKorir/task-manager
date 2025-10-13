@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.taskmanager.store.dtos.ErrorResponse;
 import com.taskmanager.store.dtos.TaskDto;
 import com.taskmanager.store.entities.Status;
 import com.taskmanager.store.entities.Task;
@@ -28,6 +29,7 @@ import com.taskmanager.store.repositories.TaskRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -60,13 +62,100 @@ public class TaskController {
         @ApiResponse(
             responseCode = "201",
             description = "Task created successfully",
-            content = @Content(schema = @Schema(implementation = TaskDto.class))
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = TaskDto.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "id": 1,
+                        "title": "Complete documentation",
+                        "description": "Write API documentation",
+                        "status": "PENDING",
+                        "userId": 1
+                    }
+                    """
+                )
+            )
         ),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "403", description = "Forbidden")
+        @ApiResponse(
+            responseCode = "400",
+            description = "Validation failed",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "type": "about:blank",
+                        "title": "Bad Request",
+                        "status": 400,
+                        "detail": "Validation failed",
+                        "instance": "/api/tasks",
+                        "description": "title: Title is required and cannot be empty"
+                    }
+                    """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - Missing or invalid JWT token",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "type": "about:blank",
+                        "title": "Unauthorized",
+                        "status": 401,
+                        "detail": "Full authentication is required to access this resource",
+                        "instance": "/api/tasks"
+                    }
+                    """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Invalid JWT token",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "type": "about:blank",
+                        "title": "Forbidden",
+                        "status": 403,
+                        "detail": "JWT signature is invalid",
+                        "instance": "/api/tasks",
+                        "description": "The JWT signature is invalid"
+                    }
+                    """
+                )
+            )
+        )
     })
     @PostMapping
     public ResponseEntity<TaskDto> createTask(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Task details to create",
+            required = true,
+            content = @Content(
+                schema = @Schema(implementation = Task.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "title": "Complete documentation",
+                        "description": "Write API documentation",
+                        "status": "PENDING"
+                    }
+                    """
+                )
+            )
+        )
         @Valid @RequestBody Task task,
         UriComponentsBuilder uriBuilder
     ) {
@@ -93,13 +182,81 @@ public class TaskController {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Tasks retrieved successfully"
+            description = "Tasks retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                examples = {
+                    @ExampleObject(
+                        name = "Multiple tasks",
+                        value = """
+                        [
+                            {
+                                "id": 1,
+                                "title": "Task 1",
+                                "description": "Description 1",
+                                "status": "PENDING",
+                                "userId": 1
+                            },
+                            {
+                                "id": 2,
+                                "title": "Task 2",
+                                "description": "Description 2",
+                                "status": "COMPLETED",
+                                "userId": 1
+                            }
+                        ]
+                        """
+                    ),
+                    @ExampleObject(
+                        name = "Empty list",
+                        value = "[]"
+                    )
+                }
+            )
         ),
-        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid status parameter",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "type": "about:blank",
+                        "title": "Bad Request",
+                        "status": 400,
+                        "detail": "Invalid status: INVALID. Valid values are: PENDING, COMPLETED",
+                        "instance": "/api/tasks",
+                        "description": "Invalid parameter value provided"
+                    }
+                    """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "type": "about:blank",
+                        "title": "Forbidden",
+                        "status": 403,
+                        "detail": "Full authentication is required to access this resource",
+                        "instance": "/api/tasks"
+                    }
+                    """
+                )
+            )
+        )
     })
     @GetMapping
     public ResponseEntity<List<TaskDto>> getAllTasks(
-        @Parameter(description = "Filter tasks by status (PENDING, COMPLETED)")
+        @Parameter(description = "Filter tasks by status (PENDING, COMPLETED)", example = "PENDING", required = false)
         @RequestParam(required = false, name = "status") String filterByStatus
     ) {
         User currentUser = getCurrentUser();
@@ -136,14 +293,84 @@ public class TaskController {
         @ApiResponse(
             responseCode = "200",
             description = "Task retrieved successfully",
-            content = @Content(schema = @Schema(implementation = TaskDto.class))
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = TaskDto.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "id": 1,
+                        "title": "Task title",
+                        "description": "Task description",
+                        "status": "PENDING",
+                        "userId": 1
+                    }
+                    """
+                )
+            )
         ),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "403", description = "Access denied - task belongs to another user"),
-        @ApiResponse(responseCode = "404", description = "Task not found")
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "type": "about:blank",
+                        "title": "Forbidden",
+                        "status": 403,
+                        "detail": "Full authentication is required to access this resource",
+                        "instance": "/api/tasks/1"
+                    }
+                    """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - task belongs to another user",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "type": "about:blank",
+                        "title": "Forbidden",
+                        "status": 403,
+                        "detail": "Unauthorized access to task with id: 33",
+                        "instance": "/api/tasks/33",
+                        "description": "You do not have permission to access this task"
+                    }
+                    """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Task not found",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "type": "about:blank",
+                        "title": "Not Found",
+                        "status": 404,
+                        "detail": "Task not found with id: 1",
+                        "instance": "/api/tasks/1",
+                        "description": "The requested task does not exist"
+                    }
+                    """
+                )
+            )
+        )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<TaskDto> getTaskById(@Parameter(description = "Task ID") @PathVariable Long id) {
+    public ResponseEntity<TaskDto> getTaskById(@Parameter(description = "Task ID", example = "1") @PathVariable Long id) {
         User currentUser = getCurrentUser();
         log.info("Fetching task with ID: {} for user: {}", id, currentUser.getEmail());
     
@@ -172,15 +399,124 @@ public class TaskController {
         @ApiResponse(
             responseCode = "200",
             description = "Task updated successfully",
-            content = @Content(schema = @Schema(implementation = TaskDto.class))
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = TaskDto.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "id": 1,
+                        "title": "Updated title",
+                        "description": "Updated description",
+                        "status": "COMPLETED",
+                        "userId": 1
+                    }
+                    """
+                )
+            )
         ),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "403", description = "Access denied - task belongs to another user"),
-        @ApiResponse(responseCode = "404", description = "Task not found")
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "type": "about:blank",
+                        "title": "Forbidden",
+                        "status": 403,
+                        "detail": "Full authentication is required to access this resource",
+                        "instance": "/api/tasks/1"
+                    }
+                    """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - task belongs to another user",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "type": "about:blank",
+                        "title": "Forbidden",
+                        "status": 403,
+                        "detail": "Unauthorized access to task with id: 33",
+                        "instance": "/api/tasks/33",
+                        "description": "You do not have permission to access this task"
+                    }
+                    """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Task not found",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "type": "about:blank",
+                        "title": "Not Found",
+                        "status": 404,
+                        "detail": "Task not found with id: 1",
+                        "instance": "/api/tasks/1",
+                        "description": "The requested task does not exist"
+                    }
+                    """
+                )
+            )
+        )
     })
     @PutMapping("/{id}")
     public ResponseEntity<TaskDto> updateTask(
-        @Parameter(description = "Task ID") @PathVariable Long id,
+        @Parameter(description = "Task ID", example = "1") @PathVariable Long id,
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Task fields to update (partial update supported)",
+            required = true,
+            content = @Content(
+                schema = @Schema(implementation = TaskDto.class),
+                examples = {
+                    @ExampleObject(
+                        name = "Update status only",
+                        summary = "Partial update - status",
+                        value = """
+                        {
+                            "status": "COMPLETED"
+                        }
+                        """
+                    ),
+                    @ExampleObject(
+                        name = "Update title and description",
+                        summary = "Partial update - title and description",
+                        value = """
+                        {
+                            "title": "Updated title",
+                            "description": "Updated description"
+                        }
+                        """
+                    ),
+                    @ExampleObject(
+                        name = "Full update",
+                        summary = "Update all fields",
+                        value = """
+                        {
+                            "title": "Updated title",
+                            "description": "Updated description",
+                            "status": "COMPLETED"
+                        }
+                        """
+                    )
+                }
+            )
+        )
         @RequestBody TaskDto taskDto
     ) {
         User currentUser = getCurrentUser();
@@ -212,13 +548,72 @@ public class TaskController {
         description = "Deletes a task by its ID. User can only delete their own tasks."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Task deleted successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "403", description = "Access denied - task belongs to another user"),
-        @ApiResponse(responseCode = "404", description = "Task not found")
+        @ApiResponse(
+            responseCode = "204",
+            description = "Task deleted successfully"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "type": "about:blank",
+                        "title": "Forbidden",
+                        "status": 403,
+                        "detail": "Full authentication is required to access this resource",
+                        "instance": "/api/tasks/1"
+                    }
+                    """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Access denied - task belongs to another user",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "type": "about:blank",
+                        "title": "Forbidden",
+                        "status": 403,
+                        "detail": "Unauthorized access to task with id: 33",
+                        "instance": "/api/tasks/33",
+                        "description": "You do not have permission to access this task"
+                    }
+                    """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Task not found",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "type": "about:blank",
+                        "title": "Not Found",
+                        "status": 404,
+                        "detail": "Task not found with id: 1",
+                        "instance": "/api/tasks/1",
+                        "description": "The requested task does not exist"
+                    }
+                    """
+                )
+            )
+        )
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@Parameter(description = "Task ID") @PathVariable Long id) {
+    public ResponseEntity<Void> deleteTask(@Parameter(description = "Task ID", example = "1") @PathVariable Long id) {
         User currentUser = getCurrentUser();
         log.info("Deleting task with ID: {} for user: {}", id, currentUser.getEmail());
 
