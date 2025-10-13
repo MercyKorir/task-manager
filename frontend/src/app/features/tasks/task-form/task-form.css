@@ -114,6 +114,13 @@ form {
   cursor: not-allowed;
 }
 
+.form-control option {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
 textarea.form-control {
   resize: vertical;
   min-height: 100px;

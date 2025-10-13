@@ -61,7 +61,7 @@
     <!-- Empty State -->
      @if (!isLoading && filteredTasks.length === 0) {
       <div class="empty-state">
-        <div class="empty-icon">📭</div>
+        <span-lucide [img]="MailBox" [size]="48" class="empty-icon">📭</span-lucide>
         <h3>No tasks found</h3>
         <p>Start by creating your first task!</p>
         <button class="btn btn-primary" (click)="openCreateTaskForm()">

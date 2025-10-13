@@ -80,6 +80,14 @@
   transform: scale(1.1);
 }
 
+.action-edit-icon {
+  color: gray;
+}
+
+.action-delete-icon {
+  color: rgba(255, 0, 0, 0.8);
+}
+
 .task-content {
   padding: 1.5rem;
 }
@@ -127,6 +135,13 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+}
+
+.toggle-status-btn span {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
 }
 
 .mark-complete {

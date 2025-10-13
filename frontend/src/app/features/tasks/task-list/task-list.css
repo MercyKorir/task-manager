@@ -126,8 +126,8 @@
 }
 
 .empty-icon {
-  font-size: 4rem;
   margin-bottom: 1rem;
+  color: #667eea;
 }
 
 .empty-state h3 {

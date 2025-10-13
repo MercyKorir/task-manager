@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LucideAngularModule, Mailbox} from 'lucide-angular';
 import { TaskService } from '../../../core/services/task';
 import { ToastService } from '../../../core/services/toast';
 import { Task, TaskStatus } from '../../../core/models/task';
@@ -9,7 +10,7 @@ import { TaskFormComponent } from '../task-form/task-form';
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [CommonModule, TaskItemComponent, TaskFormComponent],
+  imports: [CommonModule, TaskItemComponent, TaskFormComponent, LucideAngularModule],
   templateUrl: './task-list.html',
   styleUrl: './task-list.css'
 })
@@ -20,6 +21,8 @@ export class TaskListComponent implements OnInit {
   showTaskForm = false;
   selectedTask: Task | null = null;
   filterStatus: 'ALL' | TaskStatus = 'ALL';
+
+  readonly MailBox = Mailbox;
 
   TaskStatus = TaskStatus;
 

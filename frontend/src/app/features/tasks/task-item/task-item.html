@@ -1,7 +1,7 @@
 <div class="task-card" [class]="statusClass">
   <div class="task-header">
     <div class="status-badge" [class]="statusClass">
-      <span class="status-icon">{{ statusIcon }}</span>
+      <span-lucide [img]="isCompleted ? Check : Hourglass" class="status-icon"></span-lucide>
       <span class="status-text">{{ statusText }}</span>
     </div>
 
@@ -11,14 +11,14 @@
         (click)="onEdit()"
         title="Edit task"
       >
-        ✏️
+        <lucide-icon [img]="Pen" class="action-edit-icon"></lucide-icon>
       </button>
       <button
         class="action-btn delete-btn"
         (click)="onDelete()"
         title="Delete task"
       >
-        🗑️
+        <lucide-icon [img]="Trash2" class="action-delete-icon"></lucide-icon>
       </button>
     </div>
   </div>
@@ -48,11 +48,11 @@
     >
       @if (task.status === TaskStatus.PENDING) {
         <span>
-          ✓ Mark as Complete
+          <lucide-icon [img]="Check"></lucide-icon> Mark as Complete
         </span>
       } @else if (task.status === TaskStatus.COMPLETED) {
         <span>
-          ↻ Mark as Pending
+          <lucide-icon [img]="Refresh"></lucide-icon> Mark as Pending
         </span>
       }
     </button>
