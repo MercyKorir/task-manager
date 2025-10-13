@@ -30,7 +30,6 @@ export class TaskFormComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.task) {
-      // Edit mode - populate form with existing task data
       this.formData = {
         title: this.task.title,
         description: this.task.description || '',

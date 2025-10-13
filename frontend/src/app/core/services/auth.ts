@@ -88,8 +88,8 @@ export class AuthService {
           const payload = JSON.parse(atob(token.split('.')[1]));
           this.currentUserSubject.next({
             email: payload.sub,
-            username: payload.sub,
-            id: payload.sub // fetch from backend instead
+            username: payload.sub, // value is email from backend
+            id: payload.sub
           } as User);
         } catch (error) {
           console.error('Error parsing token:', error);

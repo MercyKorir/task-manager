@@ -40,7 +40,6 @@ export class LoginComponent {
         this.router.navigate([this.returnUrl]);
       },
       error: (error) => {
-        // output error here
         this.toastService.error(
           error.error?.description || 'Login failed. Please check your credentials.'
         );
