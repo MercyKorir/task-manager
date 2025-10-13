@@ -360,7 +360,7 @@ The backend follows a layered architecture:
                           ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                      Service Layer                          │
-│       (AuthenticationService, JwtService)      │
+│       (AuthenticationService, JwtService)                   │
 └─────────────────────────┬───────────────────────────────────┘
                           │
                           ↓
