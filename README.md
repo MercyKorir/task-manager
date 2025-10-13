@@ -83,7 +83,7 @@ A full-stack task management application built with Spring Boot (backend) and An
 
 2. **Configure the application**
    
-   The application uses H2 in-memory database. Configuration is in `src/main/resources/application.properties`
+   The application uses H2 file-based database. Configuration is in `src/main/resources/application.properties`
 
 3. **Build the project**
 ```bash
