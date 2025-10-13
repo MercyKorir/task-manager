@@ -1,0 +1,96 @@
+<div class="task-list-container">
+  <div class="container">
+    <!-- Header -->
+    <div class="page-header">
+      <h1>My Tasks</h1>
+      <button class="btn btn-primary" (click)="openCreateTaskForm()">
+        <span class="btn-icon">+</span>
+        Create New Task
+      </button>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-cards">
+      <div class="stat-card">
+        <div class="stat-value">{{ tasks.length }}</div>
+        <div class="stat-label">Total Tasks</div>
+      </div>
+      <div class="stat-card pending">
+        <div class="stat-value">{{ pendingCount }}</div>
+        <div class="stat-label">Pending</div>
+      </div>
+      <div class="stat-card completed">
+        <div class="stat-value">{{ completedCount }}</div>
+        <div class="stat-label">Completed</div>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+      <button
+        class="filter-tab"
+        [class.active]="filterStatus === 'ALL'"
+        (click)="setFilter('ALL')"
+      >
+        All Tasks
+      </button>
+      <button
+        class="filter-tab"
+        [class.active]="filterStatus === TaskStatus.PENDING"
+        (click)="setFilter(TaskStatus.PENDING)"
+      >
+        Pending
+      </button>
+      <button
+        class="filter-tab"
+        [class.active]="filterStatus === TaskStatus.COMPLETED"
+        (click)="setFilter(TaskStatus.COMPLETED)"
+      >
+        Completed
+      </button>
+    </div>
+
+    <!-- Loading State -->
+     @if (isLoading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading tasks...</p>
+      </div>
+     }
+
+    <!-- Empty State -->
+     @if (!isLoading && filteredTasks.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3>No tasks found</h3>
+        <p>Start by creating your first task!</p>
+        <button class="btn btn-primary" (click)="openCreateTaskForm()">
+          Create Task
+        </button>
+      </div>
+     }
+
+    <!-- Tasks List -->
+     @if (!isLoading && filteredTasks.length > 0) {
+      <div class="tasks-grid">
+        <app-task-item
+          *ngFor="let task of filteredTasks"
+          [task]="task"
+          (edit)="openEditTaskForm($event)"
+          (delete)="onTaskDeleted($event)"
+          (toggleStatus)="onTaskStatusToggle($event)"
+        ></app-task-item>
+      </div>
+     }
+  </div>
+</div>
+
+<!-- Task Form Modal -->
+ @if (showTaskForm) {
+  <app-task-form
+    [task]="selectedTask"
+    (save)="onTaskSaved($event)"
+    (cancel)="closeTaskForm()"
+  ></app-task-form>
+ }
+
